@@ -230,39 +230,6 @@ function renderForumRow(f){
 }
 
 function screenHome(){
-  let adminHTML = '';
-  if(isAdminLevel()){
-    adminHTML = `
-    <div class="admin-panel">
-      <h3>⚙ Admin Panel</h3>
-      <div class="eyebrow">Create category</div>
-      <div class="admin-grid">
-        <input id="newCatName" placeholder="Category name">
-        <input id="newCatDesc" placeholder="Short description">
-      </div>
-      <button class="admin-btn" onclick="createCategory()">+ Add Category</button>
-      <div style="margin-top:16px" class="eyebrow">Categories & sub-forums</div>
-      ${DB.categories.map(c=>`
-        <div class="admin-list-item" style="flex-direction:column; align-items:stretch;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>${esc(c.name)}</strong>
-            <button onclick="deleteCategory('${c.id}')">Delete</button>
-          </div>
-          <div style="margin-top:8px; padding-left:8px;">
-            ${DB.forums.filter(f=>f.catId===c.id).map(f=>`
-              <div class="admin-list-item"><span>${esc(f.name)}</span><button onclick="deleteForum('${f.id}')">Delete</button></div>
-            `).join('') || '<div style="font-size:12px;color:var(--muted)">No sub-forums yet</div>'}
-            <div class="admin-grid" style="margin-top:8px;">
-              <input id="newForumName_${c.id}" placeholder="Sub-forum name">
-              <input id="newForumDesc_${c.id}" placeholder="Description">
-            </div>
-            <button class="admin-btn" onclick="createForum('${c.id}')">+ Add Sub-forum</button>
-          </div>
-        </div>
-      `).join('')}
-    </div>`;
-  }
-
   const catsHTML = DB.categories.map(c=>`
     ${c.name ? `<div class="divider-bar">${esc(c.name)}</div>` : ''}
     ${DB.forums.filter(f=>f.catId===c.id).sort((a,b)=>(a.order||0)-(b.order||0)).map(renderForumRow).join('') || (c.name ? '<div class="empty">No sub-forums yet.</div>' : '')}
@@ -278,7 +245,6 @@ function screenHome(){
         ${session.username ? `<button class="pill-btn ghost" onclick="toast('Pick a sub-forum first to post a thread')">${ICONS.chat} Post thread…</button>` : ''}
       </div>
     </div>
-    ${adminHTML}
     ${catsHTML}
   `;
 }
