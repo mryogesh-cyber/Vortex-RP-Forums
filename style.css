@@ -46,21 +46,6 @@
   .avatar-chip:hover{transform:scale(1.08);}
   .topbar-icons{display:flex; align-items:center; gap:6px;}
 
-  /* On narrow phones the full icon row (mail+bell+bolt+search+avatar) plus the
-     logo no longer fit on one line. Flex items here can't shrink below their
-     intrinsic size and there's no wrap/overflow handling, so the overflow
-     used to spill out past the navy topbar and show the page background
-     behind it. Hiding the 3 least-used icons keeps search + avatar/login
-     always visible and reachable, while the same actions move into the
-     drawer menu (see index.html) so nothing is lost. */
-  @media (max-width:480px){
-    #topIcons .icon-btn:nth-child(1),
-    #topIcons .icon-btn:nth-child(2),
-    #topIcons .icon-btn:nth-child(3){
-      display:none;
-    }
-  }
-
   /* ===== Drawer menu ===== */
   .drawer-bg{position:fixed; inset:0; background:rgba(20,25,35,.5); backdrop-filter:blur(2px); z-index:90; display:none;}
   .drawer-bg.open{display:block;}
