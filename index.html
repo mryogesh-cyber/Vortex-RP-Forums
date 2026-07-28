@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VORTEX RP | Forum</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%239333ea'/%3E%3Cstop offset='1' stop-color='%233b1264'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Cpath d='M50 15 A35 35 0 1 1 15 50' stroke='white' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='15' r='6' fill='white'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <button class="icon-btn" id="menuBtn" onclick="toggleDrawer(true)"></button>
+    <img id="logoImg" class="logo-mark" style="display:none; border-radius:8px;">
+    <svg id="logoSvg" class="logo-mark" viewBox="0 0 100 100">
+      <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f0c04c"/><stop offset="1" stop-color="#ffffff"/>
+      </linearGradient></defs>
+      <circle cx="50" cy="50" r="46" fill="rgba(255,255,255,.12)"/>
+      <path d="M50 12 A38 38 0 1 1 12 50" stroke="url(#logoGrad)" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <circle cx="50" cy="12" r="7" fill="#f0c04c"/>
+    </svg>
+    <div class="logo-word" id="logoWord" onclick="go('home')">VORTEX<span class="accent">RP</span></div>
+    <div class="topbar-icons" id="topIcons"></div>
+  </div>
+</div>
+
+<div class="drawer-bg" id="drawerBg" onclick="toggleDrawer(false)"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head"><h3>Menu</h3><button class="icon-btn" onclick="toggleDrawer(false)" style="color:#fff;">✕</button></div>
+  <div class="drawer-item" onclick="go('home'); toggleDrawer(false)">Home</div>
+  <div class="drawer-item" onclick="go('home'); toggleDrawer(false)">Forums</div>
+  <div class="drawer-item sub" onclick="go('home'); toggleDrawer(false)">New posts</div>
+  <div class="drawer-item sub" onclick="go('home'); toggleDrawer(false)">Search forums</div>
+  <div class="drawer-item" onclick="go('members'); toggleDrawer(false)">Members</div>
+  <div class="drawer-item sub" onclick="go('members'); toggleDrawer(false)">Current visitors</div>
+  <div class="drawer-item" id="drawerFounderLink" style="display:none; color:var(--gold);" onclick="go('founder'); toggleDrawer(false)">Founder Dashboard</div>
+</div>
+
+<div class="page">
+  <div id="app"></div>
+</div>
+
+<footer>
+  <span>Original build for your RP community — fully yours to edit and host.</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
