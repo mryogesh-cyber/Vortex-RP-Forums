@@ -3,86 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vortex RP | Community</title>
+    <title>Applications for admins | Vortex RP</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Top Navigation -->
+    <!-- Precise Dark Header -->
     <header>
         <div class="header-left">
-            <button class="menu-btn" onclick="toggleMenu()">☰</button>
-            <div class="logo">VORTEX<span>RP</span></div>
+            <button class="menu-btn">☰</button>
+            <div class="logo">VORTEX</div>
         </div>
-        <div class="header-right">
-            <button class="icon-btn">🌐</button>
-            <button class="icon-btn">✉️</button>
-            <button class="icon-btn">🔔</button>
-            <button class="icon-btn">⚡</button>
-            <button class="icon-btn">🔍</button>
-            <button class="icon-btn">⋮</button>
+        <div class="header-right header-icons">
+            <span>🌍</span>
+            <span>✉️</span>
+            <span>🔔</span>
+            <span>⚡</span>
+            <span>🔍</span>
         </div>
     </header>
 
-    <!-- Slide-out Menu -->
-    <div class="sidebar" id="mobileMenu">
-        <div class="sidebar-header">
-            <div class="logo">Menu</div>
-            <button class="close-btn" onclick="toggleMenu()">✕</button>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="#">Home</a>
-            <a href="#">Forums</a>
-            <a href="#">What's new</a>
-            <a href="#">Members</a>
-            <a href="#">Founder Dashboard</a>
-        </nav>
-    </div>
-
-    <!-- Main Content Area -->
     <main>
-        <div class="breadcrumbs">
-            &lt; Server | EN #1
-        </div>
-
-        <h2>Applications for admins</h2>
-
-        <div class="thread-list">
-            <!-- Thread Item: Important -->
-            <div class="thread-item">
-                <div class="avatar">V</div>
-                <div class="thread-content">
-                    <h3><span class="tag important">Important</span> Assistant Application - Format</h3>
-                    <div class="thread-meta">Vortex Director • Replies: 0 • Nov 26, 2024</div>
-                </div>
-            </div>
-            
-            <!-- Thread Item: Pending -->
-            <div class="thread-item">
-                <div class="avatar" style="background-color: #f97316;">H</div>
-                <div class="thread-content">
-                    <h3><span class="tag pending">Pending review</span> Assistant Application | holdengill</h3>
-                    <div class="thread-meta">holdengill • Replies: 0 • Today at 5:44 AM</div>
-                </div>
-            </div>
-
-            <!-- Thread Item: Rejected -->
-            <div class="thread-item">
-                <div class="avatar" style="background-color: #64748b;">I</div>
-                <div class="thread-content">
-                    <h3><span class="tag rejected">Rejected</span> Admin Application | Kind Insiho</h3>
-                    <div class="thread-meta">Kind Insiho • Replies: 3 • Yesterday at 8:03 PM</div>
-                </div>
+        <div class="page-header">
+            <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 5px;">&lt; Server | EN #1</div>
+            <h1 class="page-title">Applications for admins</h1>
+            <div class="action-buttons">
+                <button class="btn">Post thread</button>
             </div>
         </div>
 
-        <!-- Dynamic Stats & Online Members -->
-        <div class="stats-block">
-            <h3>Members online</h3>
-            <p style="font-size: 0.9rem; line-height: 1.6;">
-                <span class="user-role-curator">Mr Yogesh</span>, YK SIFFDIN, Ammar_kira, CABRA URS, <span class="user-role-admin">Hades Plouton</span>, ITS ONE, Zyro Kilic, josefigueroa...
-            </p>
-            <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.5rem;">Total: 1,059 (members: 56, guests: 1,003)</p>
+        <div class="block-container">
+            <!-- Filter Bar -->
+            <div class="block-filter-bar">
+                <span>Pending review ▼</span>
+                <span>Filters ▼</span>
+            </div>
+
+            <!-- Thread 1 -->
+            <div class="thread-row">
+                <div class="avatar-container" style="background: #333;">V</div>
+                <div class="thread-main">
+                    <div class="thread-title-wrap">
+                        <span class="prefix important">Important</span>
+                        <a href="#" class="thread-title">Assistant Application - Format</a>
+                        <span style="font-size: 12px;">🔒</span>
+                    </div>
+                    <div class="thread-meta">
+                        <span>Nixa Simba</span>
+                        <span>Replies: 0</span>
+                        <span>Nov 26, 2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thread 2 -->
+            <div class="thread-row">
+                <div class="avatar-container" style="background: #8b5cf6;">M</div>
+                <div class="thread-main">
+                    <div class="thread-title-wrap">
+                        <span class="prefix important">Important</span>
+                        <a href="#" class="thread-title">Admin Application - Format</a>
+                        <span style="font-size: 12px;">🔒</span>
+                    </div>
+                    <div class="thread-meta">
+                        <span>Nixa Simba</span>
+                        <span>Replies: 0</span>
+                        <span>Aug 5, 2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thread 3 -->
+            <div class="thread-row">
+                <div class="avatar-container" style="background: #f97316;">H</div>
+                <div class="thread-main">
+                    <div class="thread-title-wrap">
+                        <span class="prefix pending">Pending review</span>
+                        <a href="#" class="thread-title">Assistant Application | holdengill</a>
+                    </div>
+                    <div class="thread-meta">
+                        <span>holdengill</span>
+                        <span>Replies: 0</span>
+                        <span>Today at 5:44 AM</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thread 4 -->
+            <div class="thread-row">
+                <div class="avatar-container" style="background: #ef4444;">K</div>
+                <div class="thread-main">
+                    <div class="thread-title-wrap">
+                        <span class="prefix rejected">Rejected</span>
+                        <a href="#" class="thread-title">Admin Application | Kyma Boi</a>
+                    </div>
+                    <div class="thread-meta">
+                        <span>rishivarma</span>
+                        <span>Replies: 0</span>
+                        <span>Today at 4:33 AM</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 

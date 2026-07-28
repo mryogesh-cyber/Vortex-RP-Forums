@@ -1,66 +1,168 @@
+/* Core XenForo-style Variables */
 :root {
-    /* Core Color Palette */
-    --bg-main: #f3f4f6;
-    --header-bg: #1e242b;
-    --text-light: #f8fafc;
-    --text-dark: #0f172a;
-    --accent-blue: #3b82f6;
+    --bg-page: #edf1f5;
+    --bg-content: #ffffff;
+    --header-bg: #141414; /* Deep dark for premium feel */
+    --text-main: #141414;
+    --text-muted: #8c8c8c;
+    --border-color: #dfdfdf;
+    --accent-blue: #2196f3;
     
-    /* Status Tags */
-    --tag-pending: #eab308;
-    --tag-approved: #22c55e;
-    --tag-rejected: #ef4444;
-    --tag-important: #334155;
+    /* Exact Prefix Colors */
+    --prefix-important: #d80000;
+    --prefix-pending: #f2930d;
+    --prefix-rejected: #999999;
 }
 
-/* Reset & Base Styles */
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-body { background-color: var(--bg-main); color: var(--text-dark); }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Roboto, sans-serif; 
+}
 
-/* Navigation Header */
-header { background-color: var(--header-bg); color: var(--text-light); display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; position: sticky; top: 0; z-index: 50; }
-.header-left, .header-right { display: flex; align-items: center; gap: 1rem; }
-.menu-btn { background: none; border: none; color: var(--text-light); font-size: 1.5rem; cursor: pointer; }
+body { 
+    background-color: var(--bg-page); 
+    color: var(--text-main); 
+    line-height: 1.4;
+}
 
-.logo { font-size: 1.5rem; font-weight: 800; letter-spacing: 1px; font-style: italic; display: flex; align-items: center; gap: 0.25rem;}
-.logo span { color: var(--accent-blue); }
+/* Premium Header */
+header { 
+    background-color: var(--header-bg); 
+    height: 50px;
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 0 15px; 
+    position: sticky; 
+    top: 0; 
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
 
-.icon-btn { background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer; }
-.icon-btn:hover { color: var(--text-light); }
+.header-left, .header-right { display: flex; align-items: center; gap: 15px; }
+.menu-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+.logo { font-size: 22px; font-weight: 900; color: #fff; font-style: italic; letter-spacing: -0.5px;}
+.header-icons { color: #a5a5a5; font-size: 18px; display: flex; gap: 15px;}
 
-/* Off-Canvas Mobile Menu */
-.sidebar { position: fixed; top: 0; left: -100%; width: 280px; height: 100vh; background-color: var(--header-bg); transition: 0.3s ease; z-index: 100; box-shadow: 2px 0 5px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
-.sidebar.active { left: 0; }
-.sidebar-header { padding: 1rem; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
-.close-btn { background: none; border: none; color: var(--text-light); font-size: 1.5rem; cursor: pointer; }
-.sidebar-nav { display: flex; flex-direction: column; }
-.sidebar-nav a { padding: 1rem; color: var(--text-light); text-decoration: none; border-bottom: 1px solid #334155; }
-.sidebar-nav a:hover { background-color: #334155; }
+/* Main Container */
+main { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    padding: 10px; 
+}
 
-/* Main Content Container */
-main { padding: 1rem; max-width: 1000px; margin: 0 auto; }
+/* Breadcrumb / Title Area */
+.page-header {
+    padding: 10px 0 15px 0;
+}
+.page-title {
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text-main);
+}
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+.btn {
+    background: #e9e9e9;
+    border: 1px solid #ccc;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
-/* Breadcrumbs & Titles */
-.breadcrumbs { font-size: 0.875rem; color: #64748b; margin-bottom: 1rem; }
-h2 { font-size: 1.25rem; margin-bottom: 1rem; font-weight: 400;}
+/* High-Fidelity Thread List */
+.block-container {
+    background: var(--bg-content);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    margin-bottom: 20px;
+}
 
-/* Prefixes / Status Tags */
-.tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; color: white; margin-right: 0.5rem; }
-.tag.pending { background-color: var(--tag-pending); color: #000; }
-.tag.important { background-color: var(--tag-important); color: white;}
-.tag.approved { background-color: var(--tag-approved); color: white;}
-.tag.rejected { background-color: var(--tag-rejected); color: white;}
+.block-filter-bar {
+    background: #f5f5f5;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+}
 
-/* Thread List Layout */
-.thread-list { background: white; border-radius: 4px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 1rem; }
-.thread-item { padding: 1rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: flex-start; gap: 1rem; }
-.thread-item:last-child { border-bottom: none; }
-.avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--header-bg); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-shrink: 0; }
-.thread-content h3 { font-size: 1rem; margin-bottom: 0.25rem; font-weight: 500; display: flex; align-items: center;}
-.thread-meta { font-size: 0.8rem; color: #64748b; }
+.thread-row {
+    display: flex;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    align-items: flex-start;
+    gap: 12px;
+}
+.thread-row:last-child {
+    border-bottom: none;
+}
 
-/* Statistics / Online Block */
-.stats-block { background: white; padding: 1rem; border-radius: 4px; border: 1px solid #e2e8f0; margin-top: 1rem; }
-.stats-block h3 { border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; margin-bottom: 0.75rem; font-size: 1rem; font-weight: 500;}
-.user-role-admin { color: #ef4444; font-weight: bold; }
-.user-role-curator { color: #8b5cf6; font-weight: bold; }
+/* Avatars */
+.avatar-container {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #141414;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* Thread Content */
+.thread-main {
+    flex-grow: 1;
+}
+
+.thread-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+}
+
+.thread-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    text-decoration: none;
+}
+
+/* Exact XenForo Prefixes */
+.prefix {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: white;
+}
+.prefix.important { background-color: var(--prefix-important); }
+.prefix.pending { background-color: var(--prefix-pending); color: #000; }
+.prefix.rejected { background-color: var(--prefix-rejected); }
+
+/* Thread Meta Data */
+.thread-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.thread-meta span {
+    margin-right: 8px;
+}
