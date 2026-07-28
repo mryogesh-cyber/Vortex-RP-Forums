@@ -179,3 +179,4 @@
   .fd-tab.active{background:linear-gradient(135deg,var(--purple),var(--purple-dark)); color:#fff; border-color:transparent;}
   .fd-logo-preview{width:56px; height:56px; border-radius:12px; object-fit:cover; border:1px solid var(--line);}
   pre.fd-json{background:#1b2838; border:1px solid var(--line); border-radius:8px; padding:12px; font-size:11px; overflow:auto; max-height:260px; color:#7ee0a8; font-family:'JetBrains Mono',monospace;}
+                                   
