@@ -304,4 +304,471 @@ function screenThread(){
       <div class="breadcrumb" onclick="go('forum',{forumId:'${forum.id}'})">‹ ${esc(forum.name)}</div>
       <div class="page-title" style="font-size:19px;">${t.pinned?'<span class="tag pinned">PINNED</span>':''}${t.locked?'<span class="tag locked">LOCKED</span>':''}${t.prefix?`<span class="tag ${t.prefix}">${TAG_LABEL[t.prefix]}</span>`:''}${esc(t.title)}</div>
       ${modOk ? `
-        <div clas
+        <div class="pill-row" style="margin-top:8px;">
+          <button class="pill-btn ghost" onclick="togglePin('${t.id}')">${t.pinned?'Unpin':'Pin'}</button>
+          <button class="pill-btn ghost" onclick="toggleLock('${t.id}')">${t.locked?'Unlock':'Lock'}</button>
+          <button class="pill-btn ghost" style="color:var(--red); border-color:var(--red);" onclick="deleteThread('${t.id}')">Delete</button>
+        </div>` : ''}
+    </div>
+    ${posts.map((p,i)=>`
+      <div class="post">
+        <div class="post-side">
+          <div class="avatar-lg">${esc((p.author||'?')[0].toUpperCase())}</div>
+          <div class="uname">${esc(p.author)}</div>
+          <div class="urole">${p.authorRole==='admin'?'Admin':'Member'}</div>
+        </div>
+        <div class="post-body">
+          <div class="post-meta"><span>#${i+1}</span><span>${timeAgo(p.created)}</span></div>
+          <div class="post-text">${esc(p.text)}</div>
+          ${modOk ? `<div class="post-actions"><button class="danger" onclick="deletePost('${p.id}')">Delete</button></div>` : ''}
+        </div>
+      </div>
+    `).join('')}
+    ${session.username ? (t.locked && !modOk ? '<div class="empty">This thread is locked.</div>' : `
+      <div class="reply-box">
+        <label>Your reply</label>
+        <textarea id="replyText" placeholder="Write your reply..."></textarea>
+        <button class="pill-btn" onclick="submitReply('${t.id}')">Post Reply</button>
+      </div>`) : '<div class="empty">Log in to reply.</div>'}
+  `;
+}
+
+function screenMembers(){
+  return `
+    <div class="header-block">
+      <div class="breadcrumb" onclick="go('home')">‹ Home</div>
+      <div class="page-title">Members</div>
+      <div class="page-desc">${DB.users.length} total members</div>
+    </div>
+    ${DB.users.map(u=>`
+      <div class="row">
+        <div class="avatar-lg" style="width:40px;height:40px;font-size:14px;">${esc(u.username[0].toUpperCase())}</div>
+        <div class="row-main">
+          <div class="row-title">${esc(u.username)} ${u.banned?'<span class="tag rejected">BANNED</span>':''}</div>
+          <div class="row-stats">${u.role==='founder'?`<span class="tag founder">${ICONS.crown} FOUNDER</span>`:rankOf(u.role)>=80?`<span class="tag pending">${roleLabel(u.role)}</span>`:roleLabel(u.role)}</div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function openSearchModal(){
+  modal(`
+    <h3>Search forums</h3>
+    <div class="field"><input id="searchInput" placeholder="Search threads..." onkeydown="if(event.key==='Enter')runSearch()"></div>
+    <div class="actions"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="runSearch()">Search</button></div>
+  `);
+}
+function runSearch(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  closeModal();
+  if(!q) return;
+  const results = DB.threads.filter(t=>t.title.toLowerCase().includes(q));
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="header-block">
+      <div class="breadcrumb" onclick="go('home')">‹ Home</div>
+      <div class="page-title">Search results</div>
+      <div class="page-desc">${results.length} match${results.length===1?'':'es'} for "${esc(q)}"</div>
+    </div>
+    ${results.map(t=>`
+      <div class="row" onclick="go('thread',{threadId:'${t.id}'})">
+        <div class="row-icon">${ICONS.chat}</div>
+        <div class="row-main"><div class="row-title">${esc(t.title)}</div><div class="row-stats">by ${esc(t.author)}</div></div>
+      </div>
+    `).join('') || '<div class="empty">No matches.</div>'}
+  `;
+}
+
+/* ============ UTIL ============ */
+function esc(s){ return (s||'').toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function timeAgo(ts){
+  const s = Math.floor((Date.now()-ts)/1000);
+  if(s<60) return 'just now';
+  if(s<3600) return Math.floor(s/60)+'m ago';
+  if(s<86400) return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
+function toast(msg){
+  const el = document.createElement('div'); el.className='toast'; el.textContent=msg;
+  document.body.appendChild(el); setTimeout(()=>el.remove(),2200);
+}
+
+/* ============ AUTH ============ */
+function openLogin(){
+  modal(`
+    <h3>Log In</h3>
+    <div class="field"><label>Username</label><input id="loginUser"></div>
+    <div class="field"><label>Password</label><input id="loginPass" type="password"></div>
+    <div class="actions"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="doLogin()">Log In</button></div>
+    <div style="margin-top:10px; font-size:11px; color:var(--muted);">Demo admin: admin / admin</div>
+    <div style="margin-top:8px; font-size:12.5px;">No account? <a style="color:var(--purple); font-weight:600; cursor:pointer;" onclick="closeModal(); openRegister();">Register</a></div>
+  `);
+}
+function openRegister(){
+  modal(`
+    <h3>Register</h3>
+    <div class="field"><label>Username</label><input id="regUser"></div>
+    <div class="field"><label>Password</label><input id="regPass" type="password"></div>
+    <div class="actions"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="doRegister()">Create Account</button></div>
+  `);
+}
+function modal(html){
+  const bg = document.createElement('div'); bg.className='modal-bg'; bg.id='modalBg';
+  bg.innerHTML = `<div class="modal">${html}</div>`;
+  bg.addEventListener('click', e=>{ if(e.target===bg) closeModal(); });
+  document.body.appendChild(bg);
+}
+function closeModal(){ document.getElementById('modalBg')?.remove(); }
+
+async function doLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if(!u||!p){ toast('Fill both fields'); return; }
+  const email = usernameToEmail(u);
+  const { data, error } = await sb.auth.signInWithPassword({ email, password:p });
+  if(error){ toast('Invalid username or password'); return; }
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).maybeSingle();
+  if(profile && profile.banned){ await sb.auth.signOut(); toast('This account has been banned.'); return; }
+  session = { username: profile?.username || u, role: profile?.role || 'member', id: data.user.id };
+  await fetchAllData(); closeModal(); render(); toast('Logged in as '+session.username);
+}
+async function doRegister(){
+  const u = document.getElementById('regUser').value.trim();
+  const p = document.getElementById('regPass').value;
+  if(!u||!p){ toast('Fill both fields'); return; }
+  if(p.length<6){ toast('Password must be at least 6 characters'); return; }
+  const email = usernameToEmail(u);
+  const { data, error } = await sb.auth.signUp({ email, password:p, options:{ data:{ username:u } } });
+  if(error){ toast(error.message); return; }
+  if(!data.session){
+    toast('Account created, but email confirmation is still on in Supabase — see setup notes.');
+    closeModal(); return;
+  }
+  session = { username:u, role:'member', id:data.user.id };
+  await fetchAllData(); closeModal(); render(); toast('Welcome, '+u);
+}
+async function logout(){ await sb.auth.signOut(); session={username:null,role:null,id:null}; closeAccountPanel(); go('home'); }
+
+/* ============ ADMIN CRUD ============ */
+async function createCategory(){
+  const name = document.getElementById('newCatName').value.trim();
+  if(!name) return toast('Category name required');
+  const { error } = await sb.from('categories').insert({ name, sort_order: DB.categories.length+1 });
+  if(error) return toast(error.message);
+  await fetchAllData(); render();
+}
+async function deleteCategory(id){
+  if(!confirm('Delete this category and all its sub-forums/threads?')) return;
+  const { error } = await sb.from('categories').delete().eq('id', id);
+  if(error) return toast(error.message);
+  await fetchAllData(); render();
+}
+async function createForum(catId){
+  const name = document.getElementById('newForumName_'+catId).value.trim();
+  const desc = document.getElementById('newForumDesc_'+catId).value.trim();
+  if(!name) return toast('Sub-forum name required');
+  const { error } = await sb.from('forums').insert({ category_id:catId, name, description:desc, sort_order: DB.forums.length+1 });
+  if(error) return toast(error.message);
+  await fetchAllData(); render();
+}
+async function deleteForum(id){
+  if(!confirm('Delete this sub-forum and its threads?')) return;
+  const { error } = await sb.from('forums').delete().eq('id', id);
+  if(error) return toast(error.message);
+  await fetchAllData(); render();
+}
+
+/* ============ THREADS / POSTS ============ */
+function openNewThread(forumId){
+  modal(`
+    <h3>New Thread</h3>
+    <div class="field"><label>Prefix</label>
+      <select id="threadPrefix">${PREFIXES.map(p=>`<option value="${p.v}">${p.label}</option>`).join('')}</select>
+    </div>
+    <div class="field"><label>Title</label><input id="newThreadTitle"></div>
+    <div class="field"><label>Message</label><textarea id="newThreadBody" style="min-height:100px;"></textarea></div>
+    <div class="actions"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="submitNewThread('${forumId}')">Post Thread</button></div>
+  `);
+}
+async function submitNewThread(forumId){
+  const title = document.getElementById('newThreadTitle').value.trim();
+  const body = document.getElementById('newThreadBody').value.trim();
+  const prefix = document.getElementById('threadPrefix').value;
+  if(!title || !body) return toast('Fill in both fields');
+  const { data: threadRow, error } = await sb.from('threads')
+    .insert({ forum_id:forumId, title, prefix, author_id:session.id })
+    .select().single();
+  if(error) return toast(error.message);
+  const { error: postErr } = await sb.from('posts').insert({ thread_id:threadRow.id, author_id:session.id, body });
+  if(postErr) return toast(postErr.message);
+  await fetchAllData(); closeModal(); go('thread',{threadId:threadRow.id});
+}
+async function submitReply(threadId){
+  const text = document.getElementById('replyText').value.trim();
+  if(!text) return toast('Write something first');
+  const { error } = await sb.from('posts').insert({ thread_id:threadId, author_id:session.id, body:text });
+  if(error) return toast(error.message);
+  await sb.from('threads').update({ updated_at: new Date().toISOString() }).eq('id', threadId);
+  await fetchAllData(); go('thread',{threadId});
+}
+async function togglePin(id){
+  const t = DB.threads.find(x=>x.id===id);
+  const { error } = await sb.from('threads').update({ pinned: !t.pinned }).eq('id', id);
+  if(error) return toast(error.message);
+  await fetchAllData(); render();
+}
+async function toggleLock(id){
+  const t = DB.threads.find(x=>x.id===id);
+  const { error } = await sb.from('threads').update({ locked: !t.locked }).eq('id', id);
+  if(error) return toast(error.message);
+  await fetchAllData(); render();
+}
+async function deleteThread(id){
+  if(!confirm('Delete this thread?')) return;
+  const { error } = await sb.from('threads').delete().eq('id', id);
+  if(error) return toast(error.message);
+  await fetchAllData(); go('home');
+}
+async function deletePost(id){
+  if(!confirm('Delete this post?')) return;
+  const { error } = await sb.from('posts').delete().eq('id', id);
+  if(error) return toast(error.message);
+  await fetchAllData(); render();
+}
+
+/* ============ FOUNDER DASHBOARD ============ */
+const ALL_ROLES = ['member','verified','vip','tester','helper','moderator','admin','founder'];
+function allRoleOptions(){
+  const custom = (DB.customRoles||[]).map(r=>r.name);
+  return [...ALL_ROLES, ...custom];
+}
+
+function screenFounder(){
+  if(!isFounder()){
+    return `<div class="empty">Founder access only.</div>`;
+  }
+  const tab = view.fdTab || 'overview';
+  const tabs = [
+    ['overview','Overview'], ['forums','Forums'], ['users','Users'],
+    ['announce','Announcements'], ['settings','Site Settings'],
+    ['roles','Roles'], ['logs','Logs'], ['db','Database'],
+  ];
+
+  let body = '';
+  if(tab==='overview'){
+    body = `
+      <div class="fd-section">
+        <h4>${ICONS.gauge} Overview</h4>
+        <div class="fd-row"><span>Total members</span><b>${DB.users.length}</b></div>
+        <div class="fd-row"><span>Total threads</span><b>${DB.threads.length}</b></div>
+        <div class="fd-row"><span>Total posts</span><b>${DB.posts.length}</b></div>
+        <div class="fd-row"><span>Categories</span><b>${DB.categories.length}</b></div>
+        <div class="fd-row"><span>Forums / sub-forums</span><b>${DB.forums.length}</b></div>
+        <div class="fd-row"><span>Banned accounts</span><b>${DB.users.filter(u=>u.banned).length}</b></div>
+      </div>
+      <div class="fd-section">
+        <h4>${ICONS.shield} Founder permission level</h4>
+        <div class="fd-row"><span>Your rank</span><b>100 — cannot be overridden</b></div>
+        <div style="font-size:12.5px; color:var(--muted); margin-top:6px;">Full access to every page: threads, categories, users, roles, announcements, site settings, database view, and logs.</div>
+      </div>
+    `;
+  } else if(tab==='forums'){
+    body = `
+      <div class="fd-section">
+        <h4>${ICONS.settings} Create category</h4>
+        <div class="admin-grid">
+          <input id="newCatName" placeholder="Category name">
+          <input id="newCatDesc" placeholder="Short description">
+        </div>
+        <button class="admin-btn gold" onclick="createCategory()">+ Add Category</button>
+      </div>
+      <div class="fd-section">
+        <h4>${ICONS.settings} Categories & sub-forums</h4>
+        ${DB.categories.map(c=>`
+          <div class="admin-list-item" style="flex-direction:column; align-items:stretch;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>${esc(c.name||'(unnamed / top links)')}</strong>
+              <button onclick="deleteCategory('${c.id}')">Delete</button>
+            </div>
+            <div style="margin-top:8px; padding-left:8px;">
+              ${DB.forums.filter(f=>f.catId===c.id).map(f=>`
+                <div class="admin-list-item"><span>${esc(f.name)}</span><button onclick="deleteForum('${f.id}')">Delete</button></div>
+              `).join('') || '<div style="font-size:12px;color:var(--muted)">No sub-forums yet</div>'}
+              <div class="admin-grid" style="margin-top:8px;">
+                <input id="newForumName_${c.id}" placeholder="Sub-forum name">
+                <input id="newForumDesc_${c.id}" placeholder="Description">
+              </div>
+              <button class="admin-btn" onclick="createForum('${c.id}')">+ Add Sub-forum</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else if(tab==='users'){
+    body = `
+      <div class="fd-section">
+        <h4>${ICONS.users} Manage users (${DB.users.length})</h4>
+        ${DB.users.map(u=>`
+          <div class="fd-row">
+            <span>${esc(u.username)} ${u.banned?'<span class="tag rejected">BANNED</span>':''}${u.role==='founder'?`<span class="tag founder">${ICONS.crown} FOUNDER</span>`:''}</span>
+            <div style="display:flex; gap:6px; align-items:center;">
+              ${u.role==='founder' ? `<span style="font-size:11.5px; color:var(--muted);">Protected — rank 100</span>` : `
+                <select style="width:auto; padding:5px 8px; font-size:12px;" onchange="updateUserRole('${esc(u.username)}', this.value)">
+                  ${allRoleOptions().map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${roleLabel(r)}</option>`).join('')}
+                </select>
+                <button class="admin-btn" style="background:${u.banned?'linear-gradient(135deg,var(--green),#1f8f52)':'linear-gradient(135deg,var(--red),#9c2b46)'}" onclick="toggleBan('${esc(u.username)}')">${u.banned?'Unban':ICONS.ban+' Ban'}</button>
+              `}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else if(tab==='announce'){
+    const announceForum = DB.forums.find(f=>f.name==='Announcements');
+    body = `
+      <div class="fd-section">
+        <h4>${ICONS.megaphone} Post an announcement</h4>
+        <div class="field" style="margin-bottom:10px;"><label>Title</label><input id="annTitle" placeholder="Announcement title"></div>
+        <div class="field" style="margin-bottom:10px;"><label>Message</label><textarea id="annBody" style="min-height:100px;" placeholder="Write the announcement..."></textarea></div>
+        <button class="admin-btn gold" onclick="createAnnouncement('${announceForum?announceForum.id:''}')">${ICONS.megaphone} Publish (pinned)</button>
+      </div>
+    `;
+  } else if(tab==='settings'){
+    const s = DB.settings||{};
+    body = `
+      <div class="fd-section">
+        <h4>${ICONS.settings} Site settings</h4>
+        <div class="field" style="margin-bottom:10px;"><label>Site name</label><input id="siteName" value="${esc(s.siteName||'VORTEX RP')}"></div>
+        <div class="field" style="margin-bottom:10px;"><label>Tagline</label><input id="siteTagline" value="${esc(s.tagline||'')}"></div>
+        <div class="field" style="margin-bottom:12px;">
+          <label>Logo</label>
+          <div style="display:flex; align-items:center; gap:12px;">
+            ${s.logoDataUrl ? `<img class="fd-logo-preview" src="${s.logoDataUrl}">` : `<div class="fd-logo-preview" style="display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);color:var(--muted);font-size:10px;">none</div>`}
+            <input type="file" accept="image/*" onchange="handleLogoUpload(event)">
+          </div>
+        </div>
+        <button class="admin-btn gold" onclick="saveSiteSettings()">${ICONS.upload} Save settings</button>
+      </div>
+    `;
+  } else if(tab==='roles'){
+    body = `
+      <div class="fd-section">
+        <h4>${ICONS.shield} Custom roles</h4>
+        <div class="admin-grid">
+          <input id="newRoleName" placeholder="Role name (e.g. Event Host)">
+          <input id="newRoleRank" placeholder="Rank number (1-99)" type="number">
+        </div>
+        <button class="admin-btn gold" onclick="createCustomRole()">+ Add Role</button>
+        <div style="margin-top:14px;">
+          ${(DB.customRoles||[]).map(r=>`
+            <div class="fd-row"><span>${esc(r.name)} — rank ${r.rank}</span><button class="admin-btn" style="background:var(--red)" onclick="deleteCustomRole('${esc(r.name)}')">Delete</button></div>
+          `).join('') || '<div style="font-size:12.5px; color:var(--muted);">No custom roles yet.</div>'}
+        </div>
+      </div>
+    `;
+  } else if(tab==='logs'){
+    body = `
+      <div class="fd-section">
+        <h4>${ICONS.logs} Recent activity logs</h4>
+        ${(DB.logs||[]).slice(0,60).map(l=>`
+          <div class="fd-row"><span>${esc(l.action)}</span><span style="color:var(--muted); font-size:11.5px;">${esc(l.actor)} · ${timeAgo(l.time)}</span></div>
+        `).join('') || '<div style="font-size:12.5px; color:var(--muted);">No logs yet.</div>'}
+      </div>
+    `;
+  } else if(tab==='db'){
+    body = `
+      <div class="fd-section">
+        <h4>${ICONS.db} Raw database (read-only)</h4>
+        <pre class="fd-json">${esc(JSON.stringify(DB, null, 2)).slice(0,6000)}</pre>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="header-block">
+      <div class="breadcrumb" onclick="go('home')">‹ Home</div>
+      <div class="page-title">${ICONS.crown} Founder Dashboard</div>
+      <div class="page-desc">Unrestricted access — permission level 100</div>
+    </div>
+    <div class="fd-tabbar">
+      ${tabs.map(([k,label])=>`<div class="fd-tab ${tab===k?'active':''}" onclick="go('founder',{fdTab:'${k}'})">${label}</div>`).join('')}
+    </div>
+    ${body}
+  `;
+}
+
+async function updateUserRole(username, role){
+  const u = DB.users.find(x=>x.username===username);
+  if(!u || u.role==='founder') return;
+  const { error } = await sb.from('profiles').update({ role }).eq('id', u.id);
+  if(error) return toast(error.message);
+  await addLog(`Changed ${username}'s role to ${roleLabel(role)}`);
+  await fetchAllData(); render();
+}
+async function toggleBan(username){
+  const u = DB.users.find(x=>x.username===username);
+  if(!u || u.role==='founder') return;
+  const { error } = await sb.from('profiles').update({ banned: !u.banned }).eq('id', u.id);
+  if(error) return toast(error.message);
+  await addLog(`${!u.banned?'Banned':'Unbanned'} ${username}`);
+  await fetchAllData(); render();
+}
+async function createAnnouncement(forumId){
+  const title = document.getElementById('annTitle').value.trim();
+  const body = document.getElementById('annBody').value.trim();
+  if(!title || !body || !forumId) return toast('Fill in both fields');
+  const { data: threadRow, error } = await sb.from('threads')
+    .insert({ forum_id:forumId, title, prefix:'important', author_id:session.id, pinned:true })
+    .select().single();
+  if(error) return toast(error.message);
+  const { error: postErr } = await sb.from('posts').insert({ thread_id:threadRow.id, author_id:session.id, body });
+  if(postErr) return toast(postErr.message);
+  await addLog(`Published announcement: ${title}`);
+  await fetchAllData(); toast('Announcement published'); go('thread',{threadId:threadRow.id});
+}
+async function saveSiteSettings(){
+  const siteName = document.getElementById('siteName').value.trim() || 'VORTEX RP';
+  const tagline = document.getElementById('siteTagline').value.trim();
+  const { error } = await sb.from('site_settings').update({ site_name:siteName, tagline }).eq('id', 1);
+  if(error) return toast(error.message);
+  await addLog('Updated site settings');
+  await fetchAllData(); render(); toast('Site settings saved');
+}
+function handleLogoUpload(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const { error } = await sb.from('site_settings').update({ logo_url: reader.result }).eq('id', 1);
+    if(error) return toast(error.message);
+    await addLog('Uploaded a new site logo');
+    await fetchAllData(); render(); toast('Logo updated');
+  };
+  reader.readAsDataURL(file);
+}
+async function createCustomRole(){
+  const name = document.getElementById('newRoleName').value.trim();
+  const rank = parseInt(document.getElementById('newRoleRank').value, 10);
+  if(!name || !rank || rank<1 || rank>99) return toast('Enter a name and rank between 1-99');
+  if((DB.customRoles||[]).some(r=>r.name===name) || ALL_ROLES.includes(name)) return toast('Role name already exists');
+  const { error } = await sb.from('custom_roles').insert({ name, rank });
+  if(error) return toast(error.message);
+  await addLog(`Created custom role: ${name} (rank ${rank})`);
+  await fetchAllData(); render();
+}
+async function deleteCustomRole(name){
+  const { error } = await sb.from('custom_roles').delete().eq('name', name);
+  if(error) return toast(error.message);
+  await addLog(`Deleted custom role: ${name}`);
+  await fetchAllData(); render();
+}
+
+/* ============ INIT ============ */
+(async function init(){
+  try{
+    await restoreSession();
+    await fetchAllData();
+  }catch(e){ console.error('Vortex RP init error:', e); }
+  render();
+})();
