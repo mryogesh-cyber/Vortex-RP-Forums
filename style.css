@@ -43,6 +43,8 @@
   .logo-word{font-weight:800; font-size:26px; color:#fff; letter-spacing:-1px; cursor:pointer; display:flex; align-items:center; font-style:italic; transform:skewX(-6deg); text-shadow:0 1px 4px rgba(0,0,0,.3); white-space:nowrap; flex:none; font-family:'Sora',sans-serif;}
   .logo-word .accent{color:var(--gold);}
   .avatar-chip{width:27px; height:27px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; color:#2a1f00; font-weight:800; font-size:11px; cursor:pointer; border:2px solid rgba(255,255,255,.35); flex:none;}
+  .login-link{background:none; border:none; color:#c9d3e6; font-size:14px; font-weight:600; cursor:pointer; padding:6px 4px; flex:none;}
+  .login-link:hover{color:#fff;}
   .avatar-chip:hover{transform:scale(1.08);}
   .topbar-icons{display:flex; align-items:center; gap:4px; margin-left:auto; flex:none;}
   .topbar-left{display:flex; align-items:center; gap:6px;}

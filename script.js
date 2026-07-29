@@ -147,10 +147,12 @@ function renderTopIcons(){
   const avatarLetter = session.username ? session.username[0].toUpperCase() : null;
   profileSlot.innerHTML = session.username
     ? `<div class="avatar-chip" onclick="toggleAccountPanel(event)">${avatarLetter}</div>`
-    : `<button class="icon-btn" onclick="openLogin()" style="font-size:11px; font-weight:700; width:auto; padding:6px 9px;">LOG IN</button>`;
+    : `<button class="login-link" onclick="openLogin()">Log in</button>`;
   box.innerHTML = `
-    <button class="icon-btn" onclick="toast('Conversations — nothing yet')">${ICONS.mail}</button>
-    <button class="icon-btn" onclick="toast('No new alerts')">${ICONS.bell}</button>
+    ${session.username ? `
+      <button class="icon-btn" onclick="toast('Conversations — nothing yet')">${ICONS.mail}</button>
+      <button class="icon-btn" onclick="toast('No new alerts')">${ICONS.bell}</button>
+    ` : ''}
     <button class="icon-btn" onclick="toast('What\\'s new — all caught up')">${ICONS.bolt}</button>
     <button class="icon-btn" onclick="openSearchModal()">${ICONS.search}</button>
   `;
