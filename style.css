@@ -47,7 +47,7 @@
   .login-link:hover{color:#fff;}
   .avatar-chip:hover{transform:scale(1.08);}
   .topbar-icons{display:flex; align-items:center; gap:4px; margin-left:auto; flex:none;}
-  .topbar-left{display:flex; align-items:center; gap:6px;}
+  .topbar-left{display:flex; align-items:center; gap:16px;}
   #profileSlot{flex:none;}
 
   /* ===== Drawer menu ===== */
