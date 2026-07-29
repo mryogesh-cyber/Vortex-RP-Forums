@@ -77,7 +77,6 @@
   .page-title{font-size:23px; font-weight:700; margin-bottom:5px; color:var(--text); letter-spacing:-.01em;}
   .page-desc{font-size:12.5px; color:var(--muted); margin-bottom:14px; letter-spacing:.02em; font-weight:500;}
   .pill-row{display:flex; gap:10px;}
-  .pill-row .pill-btn{flex:1;}
   .pill-btn{background:var(--purple); color:#fff; border:1px solid rgba(255,255,255,.08); padding:9px 16px; border-radius:7px; font-size:13.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:7px; transition:background .15s;}
   .pill-btn:hover{background:#7d4ce0;}
   .pill-btn.ghost{background:transparent; color:var(--text); border:1px solid var(--line); box-shadow:none;}
