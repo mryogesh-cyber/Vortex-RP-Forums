@@ -12,10 +12,12 @@
 
 <div class="topbar">
   <div class="topbar-inner">
-    <button class="icon-btn" id="menuBtn" onclick="toggleDrawer(true)"></button>
-    <img id="logoImg" class="logo-mark" style="display:none;">
-    <div class="logo-word" id="logoWord" onclick="go('home')">V<span class="accent">RP</span></div>
-    <div id="profileSlot"></div>
+    <div class="topbar-left">
+      <button class="icon-btn" id="menuBtn" onclick="toggleDrawer(true)"></button>
+      <img id="logoImg" class="logo-mark" style="display:none;">
+      <div class="logo-word" id="logoWord" onclick="go('home')">V<span class="accent">RP</span></div>
+      <div id="profileSlot"></div>
+    </div>
     <div class="topbar-icons" id="topIcons"></div>
   </div>
 </div>
@@ -42,5 +44,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="script.js"></script>
+</script>
 </body>
 </html>

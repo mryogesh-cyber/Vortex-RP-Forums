@@ -45,6 +45,7 @@
   .avatar-chip{width:27px; height:27px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; color:#2a1f00; font-weight:800; font-size:11px; cursor:pointer; border:2px solid rgba(255,255,255,.35); flex:none;}
   .avatar-chip:hover{transform:scale(1.08);}
   .topbar-icons{display:flex; align-items:center; gap:4px; margin-left:auto; flex:none;}
+  .topbar-left{display:flex; align-items:center; gap:6px;}
   #profileSlot{flex:none;}
   .logo-mark{flex:none;}
 
