@@ -259,18 +259,8 @@ function screenForum(){
   const backLabel = forum.parentForumId ? esc(DB.forums.find(x=>x.id===forum.parentForumId)?.name || 'Back') : 'Home';
   const kids = childForums(forum.id);
 
-  if(kids.length){
-    return `
-      <div class="header-block">
-        <div class="breadcrumb" onclick="${backTarget}">‹ ${backLabel}</div>
-        <div class="page-title">${esc(forum.name)}</div>
-        <div class="page-desc">${esc(forum.desc||'')}</div>
-      </div>
-      ${kids.map(renderForumRow).join('')}
-    `;
-  }
-
   const threads = DB.threads.filter(t=>t.forumId===forum.id).sort((a,b)=>(b.pinned-a.pinned)||(b.updated-a.updated));
+
   return `
     <div class="header-block">
       <div class="breadcrumb" onclick="${backTarget}">‹ ${backLabel}</div>
@@ -280,6 +270,7 @@ function screenForum(){
         ${session.username ? `<button class="pill-btn" onclick="openNewThread('${forum.id}')">${ICONS.pencil} Post thread…</button>` : ''}
       </div>
     </div>
+    ${kids.map(renderForumRow).join('')}
     ${threads.map(t=>{
       const postCount = DB.posts.filter(p=>p.threadId===t.id).length;
       const lastPost = DB.posts.filter(p=>p.threadId===t.id).sort((a,b)=>b.created-a.created)[0];
