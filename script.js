@@ -293,14 +293,16 @@ function screenThread(){
   const forum = DB.forums.find(f=>f.id===t.forumId);
   const posts = DB.posts.filter(p=>p.threadId===t.id).sort((a,b)=>a.created-b.created);
   const modOk = canModerate();
+  const archiveForum = DB.forums.find(f=>f.parentForumId===forum.id && f.name==='Archive');
   return `
     <div class="header-block">
       <div class="breadcrumb" onclick="go('forum',{forumId:'${forum.id}'})">‹ ${esc(forum.name)}</div>
       <div class="page-title" style="font-size:19px;">${t.pinned?'<span class="tag pinned">PINNED</span>':''}${t.locked?'<span class="tag locked">LOCKED</span>':''}${t.prefix?`<span class="tag ${t.prefix}">${TAG_LABEL[t.prefix]}</span>`:''}${esc(t.title)}</div>
       ${modOk ? `
-        <div class="pill-row" style="margin-top:8px;">
+        <div class="pill-row" style="margin-top:8px; flex-wrap:wrap;">
           <button class="pill-btn ghost" onclick="togglePin('${t.id}')">${t.pinned?'Unpin':'Pin'}</button>
           <button class="pill-btn ghost" onclick="toggleLock('${t.id}')">${t.locked?'Unlock':'Lock'}</button>
+          ${archiveForum ? `<button class="pill-btn ghost" onclick="moveToArchive('${t.id}','${archiveForum.id}')">${ICONS.link} Move to Archive</button>` : ''}
           <button class="pill-btn ghost" style="color:var(--red); border-color:var(--red);" onclick="deleteThread('${t.id}')">Delete</button>
         </div>` : ''}
     </div>
@@ -517,6 +519,13 @@ async function toggleLock(id){
   const { error } = await sb.from('threads').update({ locked: !t.locked }).eq('id', id);
   if(error) return toast(error.message);
   await fetchAllData(); render();
+}
+async function moveToArchive(threadId, archiveForumId){
+  if(!confirm('Move this thread to Archive?')) return;
+  const { error } = await sb.from('threads').update({ forum_id: archiveForumId }).eq('id', threadId);
+  if(error) return toast(error.message);
+  await addLog('Moved a thread to Archive');
+  await fetchAllData(); toast('Moved to Archive'); go('forum',{forumId:archiveForumId});
 }
 async function deleteThread(id){
   if(!confirm('Delete this thread?')) return;
