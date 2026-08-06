@@ -1,2 +1,4 @@
-# Vortex-RP-Forums
-Vortex RP Official forum website 
+cd prime-rp-forum
+git init
+git add .
+git commit -m "Initial Prime RP forum layout"
