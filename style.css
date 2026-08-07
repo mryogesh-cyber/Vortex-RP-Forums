@@ -101,6 +101,7 @@
   .tag.interesting{background:var(--teal); color:var(--teal-text);}
   .tag.pending{background:var(--amber); color:var(--amber-text);}
   .tag.rejected{background:var(--gray-badge); color:var(--gray-badge-text);}
+  .tag.accepted{background:var(--green); color:#06210f;}
   .tag.approved{background:var(--green); color:#06210f;}
   .tag.consideration{background:#b9a4ec; color:#2c1857;}
   .tag.pinned{background:var(--gold); color:#3a2a00;}

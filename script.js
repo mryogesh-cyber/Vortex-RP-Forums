@@ -58,13 +58,12 @@ async function addLog(action){
 const PREFIXES = [
   {v:'', label:'No prefix'},
   {v:'important', label:'Important'},
-  {v:'interesting', label:'Interesting'},
-  {v:'pending', label:'Pending review'},
-  {v:'approved', label:'Approved'},
+  {v:'pending', label:'Pending Review'},
+  {v:'consideration', label:'On Consideration'},
+  {v:'accepted', label:'Accepted'},
   {v:'rejected', label:'Rejected'},
-  {v:'consideration', label:'On consideration'},
 ];
-const TAG_LABEL = {important:'Important',interesting:'Interesting',pending:'Pending review',approved:'Approved',rejected:'Rejected',consideration:'On consideration'};
+const TAG_LABEL = {important:'Important',pending:'Pending Review',accepted:'Accepted',rejected:'Rejected',consideration:'On Consideration',interesting:'Interesting',approved:'Accepted'};
 
 /* ============ REAL DATA FETCHING (Supabase) ============ */
 async function fetchAllData(){
@@ -97,7 +96,7 @@ async function fetchAllData(){
     authorId:p.author_id, text:p.body, created:new Date(p.created_at).getTime()
   }));
   DB.users = (profilesRes.data||[]).map(u=>({ id:u.id, username:u.username, role:u.role, banned:u.banned, joined:new Date(u.joined_at).getTime() }));
-  DB.settings = settingsRes.data ? { siteName:settingsRes.data.site_name, tagline:settingsRes.data.tagline, logoDataUrl:settingsRes.data.logo_url } : { siteName:'VORTEX RP', tagline:'' };
+  DB.settings = settingsRes.data ? { siteName:settingsRes.data.site_name, tagline:settingsRes.data.tagline, logoDataUrl:settingsRes.data.logo_url } : { siteName:'PRIME RP', tagline:'' };
   DB.customRoles = (rolesRes.data||[]).map(r=>({ name:r.name, rank:r.rank }));
   DB.logs = (logsRes.data||[]).map(l=>({ id:l.id, action:l.action, actor: profileMap[l.actor_id]?.username || 'system', time:new Date(l.created_at).getTime() }));
 }
@@ -241,8 +240,8 @@ function screenHome(){
   return `
     <div class="header-block">
       <div class="breadcrumb" onclick="go('home')">‹ Home</div>
-      <div class="page-title">VORTEX RP | Forum</div>
-      <div class="page-desc">OPEN WORLD ROLEPLAY — VORTEX RP COMMUNITY</div>
+      <div class="page-title">PRIME RP | Forum</div>
+      <div class="page-desc">OPEN WORLD ROLEPLAY — PRIME RP COMMUNITY</div>
       <div class="pill-row">
         <button class="pill-btn" onclick="toast('Showing all new posts')">${ICONS.bolt} New posts</button>
         ${session.username ? `<button class="pill-btn ghost" onclick="toast('Pick a sub-forum first to post a thread')">${ICONS.pencil} Post thread…</button>` : ''}
@@ -295,17 +294,28 @@ function screenThread(){
   const modOk = canModerate();
   const archiveForum = DB.forums.find(f=>f.parentForumId===forum.id && f.name==='Archive');
   return `
-    <div class="header-block">
+    <div class="header-block" style="position:relative;">
       <div class="breadcrumb" onclick="go('forum',{forumId:'${forum.id}'})">‹ ${esc(forum.name)}</div>
-      <div class="page-title" style="font-size:19px;">${t.pinned?'<span class="tag pinned">PINNED</span>':''}${t.locked?'<span class="tag locked">LOCKED</span>':''}${t.prefix?`<span class="tag ${t.prefix}">${TAG_LABEL[t.prefix]}</span>`:''}${esc(t.title)}</div>
+      <div class="page-title" style="font-size:19px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+        <span>${t.pinned?'<span class="tag pinned">PINNED</span>':''}${t.locked?'<span class="tag locked">LOCKED</span>':''}${t.prefix?`<span class="tag ${t.prefix}">${TAG_LABEL[t.prefix]}</span>`:''}${esc(t.title)}</span>
+        ${modOk ? `<button class="pill-btn ghost" style="flex:none;" onclick="toggleThreadFunctions(event)">${ICONS.settings} Thread Functions</button>` : ''}
+      </div>
       ${modOk ? `
-        <div class="pill-row" style="margin-top:8px; flex-wrap:wrap;">
-          <button class="pill-btn ghost" onclick="togglePin('${t.id}')">${t.pinned?'Unpin':'Pin'}</button>
-          <button class="pill-btn ghost" onclick="toggleLock('${t.id}')">${t.locked?'Unlock':'Lock'}</button>
-          ${archiveForum ? `<button class="pill-btn ghost" onclick="moveToArchive('${t.id}','${archiveForum.id}')">${ICONS.link} Move to Archive</button>` : ''}
-          <button class="pill-btn ghost" style="color:var(--red); border-color:var(--red);" onclick="deleteThread('${t.id}')">Delete</button>
-        </div>` : ''}
+        <div class="fd-section" id="threadFnMenu" style="position:absolute; right:16px; top:70px; z-index:50; width:240px; margin:0; display:none;">
+          <div class="fd-row" style="cursor:pointer;" onclick="togglePin('${t.id}')"><span>${t.pinned?'Unsticky':'Sticky'}</span></div>
+          <div class="fd-row" style="cursor:pointer;" onclick="toggleLock('${t.id}')"><span>${t.locked?'Open (Unlock)':'Close (Lock)'}</span></div>
+          ${archiveForum ? `<div class="fd-row" style="cursor:pointer;" onclick="moveToArchive('${t.id}','${archiveForum.id}')"><span>Move to Archive</span></div>` : ''}
+          <div class="fd-row"><span>Change Prefix</span></div>
+          <div style="padding:6px 0 10px;">
+            <select onchange="changePrefix('${t.id}', this.value)" style="font-size:12.5px;">
+              ${PREFIXES.map(p=>`<option value="${p.v}" ${t.prefix===p.v?'selected':''}>${p.label}</option>`).join('')}
+            </select>
+          </div>
+          <div class="fd-row" style="cursor:pointer; color:var(--red);" onclick="deleteThread('${t.id}')"><span>Delete Thread</span></div>
+        </div>
+      ` : ''}
     </div>
+    <style>#threadFnMenu.open{display:block !important;}</style>
     ${posts.map((p,i)=>`
       <div class="post">
         <div class="post-side">
@@ -527,6 +537,16 @@ async function moveToArchive(threadId, archiveForumId){
   await addLog('Moved a thread to Archive');
   await fetchAllData(); toast('Moved to Archive'); go('forum',{forumId:archiveForumId});
 }
+async function changePrefix(threadId, prefix){
+  const { error } = await sb.from('threads').update({ prefix }).eq('id', threadId);
+  if(error) return toast(error.message);
+  await addLog('Changed thread prefix to '+(TAG_LABEL[prefix]||'No prefix'));
+  await fetchAllData(); render(); toast('Prefix updated');
+}
+function toggleThreadFunctions(e){
+  e.stopPropagation();
+  document.getElementById('threadFnMenu')?.classList.toggle('open');
+}
 async function deleteThread(id){
   if(!confirm('Delete this thread?')) return;
   const { error } = await sb.from('threads').delete().eq('id', id);
@@ -642,7 +662,7 @@ function screenFounder(){
     body = `
       <div class="fd-section">
         <h4>${ICONS.settings} Site settings</h4>
-        <div class="field" style="margin-bottom:10px;"><label>Site name</label><input id="siteName" value="${esc(s.siteName||'VORTEX RP')}"></div>
+        <div class="field" style="margin-bottom:10px;"><label>Site name</label><input id="siteName" value="${esc(s.siteName||'PRIME RP')}"></div>
         <div class="field" style="margin-bottom:10px;"><label>Tagline</label><input id="siteTagline" value="${esc(s.tagline||'')}"></div>
         <div class="field" style="margin-bottom:12px;">
           <label>Logo</label>
@@ -732,7 +752,7 @@ async function createAnnouncement(forumId){
   await fetchAllData(); toast('Announcement published'); go('thread',{threadId:threadRow.id});
 }
 async function saveSiteSettings(){
-  const siteName = document.getElementById('siteName').value.trim() || 'VORTEX RP';
+  const siteName = document.getElementById('siteName').value.trim() || 'PRIME RP';
   const tagline = document.getElementById('siteTagline').value.trim();
   const { error } = await sb.from('site_settings').update({ site_name:siteName, tagline }).eq('id', 1);
   if(error) return toast(error.message);
@@ -779,6 +799,6 @@ async function deleteCustomRole(name){
   try{
     await restoreSession();
     await fetchAllData();
-  }catch(e){ console.error('Vortex RP init error:', e); }
+  }catch(e){ console.error('Prime RP init error:', e); }
   render();
 })();
