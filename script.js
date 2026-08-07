@@ -241,7 +241,6 @@ function screenHome(){
     <div class="header-block">
       <div class="breadcrumb" onclick="go('home')">‹ Home</div>
       <div class="page-title">PRIME RP | Forum</div>
-      <div class="page-desc">OPEN WORLD ROLEPLAY — PRIME RP COMMUNITY</div>
       <div class="pill-row">
         <button class="pill-btn" onclick="toast('Showing all new posts')">${ICONS.bolt} New posts</button>
         ${session.username ? `<button class="pill-btn ghost" onclick="toast('Pick a sub-forum first to post a thread')">${ICONS.pencil} Post thread…</button>` : ''}
