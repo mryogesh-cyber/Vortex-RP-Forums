@@ -237,6 +237,19 @@ function screenHome(){
     ${DB.forums.filter(f=>f.catId===c.id).sort((a,b)=>(a.order||0)-(b.order||0)).map(renderForumRow).join('') || (c.name ? '<div class="empty">No sub-forums yet.</div>' : '')}
   `).join('') || '<div class="empty">No categories yet.</div>';
 
+  const rulesLink = DB.forums.find(f=>f.link && f.name==='Server and Forum Rules');
+  const discordLink = DB.forums.find(f=>f.link && f.name.includes('Discord'));
+  const techForum = DB.forums.find(f=>f.name==='Technical section');
+  const quickLinks = `
+    <div class="divider-bar">Quick Links</div>
+    <div class="quick-links">
+      <a onclick="go('home')">🏠 Homepage</a>
+      ${rulesLink ? `<a onclick="toast('This links out to: Server and Forum Rules')">Server and Forum Rules</a>` : ''}
+      ${techForum ? `<a onclick="go('forum',{forumId:'${techForum.id}'})">Technical Section</a>` : ''}
+      ${discordLink ? `<a onclick="toast('This links out to: Discord')">Join our Discord</a>` : ''}
+    </div>
+  `;
+
   return `
     <div class="header-block">
       <div class="breadcrumb" onclick="go('home')">‹ Home</div>
@@ -247,6 +260,7 @@ function screenHome(){
       </div>
     </div>
     ${catsHTML}
+    ${quickLinks}
   `;
 }
 
@@ -324,7 +338,7 @@ function screenThread(){
         </div>
         <div class="post-body">
           <div class="post-meta"><span>#${i+1}</span><span>${timeAgo(p.created)}</span></div>
-          <div class="post-text">${esc(p.text)}</div>
+          <div class="post-text">${renderMarkdown(p.text)}</div>
           ${modOk ? `<div class="post-actions"><button class="danger" onclick="deletePost('${p.id}')">Delete</button></div>` : ''}
         </div>
       </div>
@@ -332,7 +346,9 @@ function screenThread(){
     ${session.username ? (t.locked && !modOk ? '<div class="empty">This thread is locked.</div>' : `
       <div class="reply-box">
         <label>Your reply</label>
+        ${rtToolbar('replyText')}
         <textarea id="replyText" placeholder="Write your reply..."></textarea>
+        <label class="watch-row"><input type="checkbox" id="watchToggle" onchange="toggleWatch('${t.id}')"> Watch this thread and get notified of new replies</label>
         <button class="pill-btn" onclick="submitReply('${t.id}')">Post Reply</button>
       </div>`) : '<div class="empty">Log in to reply.</div>'}
   `;
@@ -387,6 +403,60 @@ function runSearch(){
 
 /* ============ UTIL ============ */
 function esc(s){ return (s||'').toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function renderMarkdown(raw){
+  let s = esc(raw||'');
+  s = s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  s = s.replace(/\*(.+?)\*/g, '<i>$1</i>');
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--link); text-decoration:underline;">$1</a>');
+  s = s.replace(/!\[img\]\((data:image\/[^)]+)\)/g, '<img src="$1" style="max-width:100%; border-radius:6px; margin-top:6px;">');
+  return s;
+}
+function rtInsert(textareaId, before, after){
+  const ta = document.getElementById(textareaId);
+  if(!ta) return;
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const sel = ta.value.slice(start, end) || 'text';
+  ta.value = ta.value.slice(0,start) + before + sel + after + ta.value.slice(end);
+  ta.focus();
+}
+function rtLink(textareaId){
+  const url = prompt('Paste the link URL:');
+  if(!url) return;
+  rtInsert(textareaId, '[', `](${url})`);
+}
+function rtAttachImage(textareaId, event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const ta = document.getElementById(textareaId);
+    ta.value += `\n![img](${reader.result})`;
+  };
+  reader.readAsDataURL(file);
+}
+function rtToolbar(textareaId){
+  return `
+    <div class="rt-toolbar">
+      <button type="button" onclick="rtInsert('${textareaId}','**','**')" title="Bold"><b>B</b></button>
+      <button type="button" onclick="rtInsert('${textareaId}','*','*')" title="Italic"><i>I</i></button>
+      <button type="button" onclick="rtLink('${textareaId}')" title="Link">🔗</button>
+      <label class="rt-file" style="cursor:pointer;" title="Attach image">
+        📎<input type="file" accept="image/*" style="display:none;" onchange="rtAttachImage('${textareaId}', event)">
+      </label>
+    </div>`;
+}
+async function toggleWatch(threadId){
+  const key = threadId+'_'+session.id;
+  const { data: existing } = await sb.from('thread_watches').select('id').eq('thread_id', threadId).eq('user_id', session.id).maybeSingle();
+  if(existing){
+    await sb.from('thread_watches').delete().eq('id', existing.id);
+    toast('Stopped watching');
+  } else {
+    await sb.from('thread_watches').insert({ thread_id: threadId, user_id: session.id });
+    toast('Watching this thread');
+  }
+  render();
+}
 function timeAgo(ts){
   const s = Math.floor((Date.now()-ts)/1000);
   if(s<60) return 'just now';
@@ -492,7 +562,10 @@ function openNewThread(forumId){
       <select id="threadPrefix">${PREFIXES.map(p=>`<option value="${p.v}">${p.label}</option>`).join('')}</select>
     </div>
     <div class="field"><label>Title</label><input id="newThreadTitle"></div>
-    <div class="field"><label>Message</label><textarea id="newThreadBody" style="min-height:100px;"></textarea></div>
+    <div class="field"><label>Message</label>
+      ${rtToolbar('newThreadBody')}
+      <textarea id="newThreadBody" style="min-height:100px;"></textarea>
+    </div>
     <div class="actions"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="submitNewThread('${forumId}')">Post Thread</button></div>
   `);
 }
@@ -801,3 +874,4 @@ async function deleteCustomRole(name){
   }catch(e){ console.error('Prime RP init error:', e); }
   render();
 })();
+
