@@ -110,7 +110,35 @@ async function restoreSession(){
   }
 }
 
-function go(screen, params={}){ view = { screen, ...params }; closeAccountPanel(); render(); }
+function go(screen, params={}, replace=false){
+  view = { screen, ...params };
+  closeAccountPanel();
+  const state = { ...view, scrollY:0 };
+  const url = '#'+screen+(params.forumId?'/'+params.forumId:'')+(params.threadId?'/'+params.threadId:'');
+  if(replace) history.replaceState(state, '', url);
+  else history.pushState(state, '', url);
+  render();
+  window.scrollTo(0,0);
+}
+window.addEventListener('popstate', (e)=>{
+  if(e.state){
+    view = { ...e.state };
+    closeAccountPanel();
+    render();
+    window.scrollTo(0, e.state.scrollY||0);
+  } else {
+    view = { screen:'home' };
+    render();
+  }
+});
+let scrollSaveTimer;
+window.addEventListener('scroll', ()=>{
+  clearTimeout(scrollSaveTimer);
+  scrollSaveTimer = setTimeout(()=>{
+    const st = history.state;
+    if(st){ history.replaceState({...st, scrollY:window.scrollY}, '', location.hash); }
+  }, 150);
+});
 function toggleDrawer(open){
   document.getElementById('drawer').classList.toggle('open', open);
   document.getElementById('drawerBg').classList.toggle('open', open);
@@ -872,6 +900,7 @@ async function deleteCustomRole(name){
     await restoreSession();
     await fetchAllData();
   }catch(e){ console.error('Prime RP init error:', e); }
+  history.replaceState({ screen:'home', scrollY:0 }, '', '#home');
   render();
 })();
 
